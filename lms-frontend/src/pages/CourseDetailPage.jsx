@@ -7,20 +7,29 @@ const CourseDetailPage = () => {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   const load = async () => {
-    const { data } = await api.get(`/courses/${id}/`);
-    setCourse(data);
-
-    // Check enrollment
     try {
-      const res = await api.get("/enrollments/", {
-        params: { course: id },
-      });
-      const rows = res.data.results || res.data;
-      setIsEnrolled(rows.length > 0);
+      const { data } = await api.get(`/courses/${id}/`);
+      setCourse(data);
+      setFailed(false);
+      try {
+        const res = await api.get("/enrollments/", {
+          params: { course: id },
+        });
+        const rows = res.data.results || res.data;
+        setIsEnrolled(rows.length > 0);
+      } catch {
+        setIsEnrolled(false);
+      }
     } catch {
-      setIsEnrolled(false);
+      setCourse(null);
+      setFailed(true);
+      toast.error("Failed to load course");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,10 +47,18 @@ const CourseDetailPage = () => {
     load();
   }, [id]);
 
-  if (!course) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0b0f19] text-white">
         Loading course...
+      </div>
+    );
+  }
+
+  if (failed || !course) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0b0f19] text-white">
+        Course not available.
       </div>
     );
   }

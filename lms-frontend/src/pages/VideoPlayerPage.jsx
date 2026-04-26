@@ -8,6 +8,8 @@ const VideoPlayerPage = () => {
   const [course, setCourse] = useState(null);
   const [enrollmentId, setEnrollmentId] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   const DEFAULT_VIDEO = "https://www.youtube.com/embed/bMknfKXIFA8";
 
@@ -15,10 +17,15 @@ const VideoPlayerPage = () => {
     api.get(`/courses/${courseId}/`)
       .then(({ data }) => {
         setCourse(data);
+        setFailed(false);
         const first = data.modules?.[0]?.lessons?.[0];
         if (first) setSelectedLesson(first);
       })
-      .catch(() => setCourse(null));
+      .catch(() => {
+        setCourse(null);
+        setFailed(true);
+      })
+      .finally(() => setLoading(false));
 
     api.get("/enrollments/", { params: { course: courseId } })
       .then(({ data }) => {
@@ -28,10 +35,18 @@ const VideoPlayerPage = () => {
       .catch(() => setEnrollmentId(null));
   }, [courseId]);
 
-  if (!course) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a12] text-white">
         Loading lesson player...
+      </div>
+    );
+  }
+
+  if (failed || !course) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a12] text-white">
+        Unable to load this course.
       </div>
     );
   }

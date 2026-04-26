@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import api from "../services/api";
 
@@ -9,26 +9,75 @@ const InstructorPanelPage = () => {
     description: "",
     category: "General",
     price: 0,
+    image: null,
   });
+  const [imagePreview, setImagePreview] = useState("");
+  const fileInputRef = useRef(null);
+
+  const mediaBaseUrl = useMemo(() => {
+    const apiBase = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
+    return apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
+  }, []);
 
   const load = () =>
-    api.get("/courses/my_courses/").then(({ data }) => setCourses(data));
+    api
+      .get("/courses/my_courses/")
+      .then(({ data }) => setCourses(data))
+      .catch(() => {
+        setCourses([]);
+        toast.error("Failed to load instructor courses");
+      });
 
   useEffect(() => {
     load();
   }, []);
 
+  useEffect(() => {
+    if (!form.image) {
+      setImagePreview("");
+      return undefined;
+    }
+    const previewUrl = URL.createObjectURL(form.image);
+    setImagePreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [form.image]);
+
+  const getCourseImageSrc = (course) => {
+    const src = course.image || course.thumbnail || "";
+    if (!src) return "";
+    if (src.startsWith("http://") || src.startsWith("https://")) return src;
+    return `${mediaBaseUrl}${src}`;
+  };
+
   const createCourse = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/courses/", form);
+      const payload = new FormData();
+      payload.append("title", form.title);
+      payload.append("description", form.description);
+      payload.append("category", form.category);
+      payload.append("price", String(form.price));
+      if (form.image) {
+        payload.append("image", form.image);
+      }
+
+      await api.post("/courses/", payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       toast.success("Course submitted for approval 🚀");
       setForm({
         title: "",
         description: "",
         category: "General",
         price: 0,
+        image: null,
       });
+      setImagePreview("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       load();
     } catch {
       toast.error("Failed to create course");
@@ -115,6 +164,29 @@ const InstructorPanelPage = () => {
             }
           />
 
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="rounded-lg bg-white/10 p-3 outline-none focus:ring-2 focus:ring-cyan-400 file:mr-4 file:rounded-md file:border-0 file:bg-cyan-400 file:px-3 file:py-1.5 file:text-black file:font-semibold hover:file:bg-cyan-300"
+            onChange={(e) =>
+              setForm({
+                ...form,
+                image: e.target.files?.[0] || null,
+              })
+            }
+          />
+
+          {imagePreview && (
+            <div className="md:col-span-2">
+              <img
+                src={imagePreview}
+                alt="Selected course"
+                className="h-40 w-full rounded-xl border border-white/20 object-cover"
+              />
+            </div>
+          )}
+
           <button className="rounded-lg bg-cyan-400 text-black font-semibold p-3 hover:bg-cyan-300 transition hover:shadow-[0_0_10px_#22d3ee]">
             Create Course
           </button>
@@ -127,6 +199,13 @@ const InstructorPanelPage = () => {
               key={course.id}
               className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-lg hover:bg-white/10 transition"
             >
+              {getCourseImageSrc(course) && (
+                <img
+                  src={getCourseImageSrc(course)}
+                  alt={course.title}
+                  className="mb-4 h-40 w-full rounded-xl border border-white/10 object-cover"
+                />
+              )}
               <h3 className="font-semibold text-lg">
                 {course.title}
               </h3>

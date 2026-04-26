@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import CourseCard from "../components/CourseCard";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import api from "../services/api";
@@ -13,14 +14,20 @@ const CourseListPage = () => {
 
   const loadCourses = async () => {
     setLoading(true);
-    const { data } = await api.get("/courses/", {
-      params: {
-        search,
-        category: category === "All" ? "" : category,
-      },
-    });
-    setCourses(data.results || data);
-    setLoading(false);
+    try {
+      const { data } = await api.get("/courses/", {
+        params: {
+          search,
+          category: category === "All" ? "" : category,
+        },
+      });
+      setCourses(data.results || data);
+    } catch {
+      setCourses([]);
+      toast.error("Failed to load courses");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

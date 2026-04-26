@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import ProgressBar from "../components/ProgressBar";
 import api from "../services/api";
 
@@ -7,10 +8,15 @@ const DashboardPage = () => {
     enrollments: [],
     recent_activity: [],
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get("/enrollments/dashboard/")
-      .then(({ data }) => setDashboard(data));
+      .then(({ data }) => setDashboard(data))
+      .catch(() => {
+        toast.error("Failed to load dashboard");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const avgProgress =
@@ -25,6 +31,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#111827] to-[#1f1b2e] text-white px-4 py-10">
+      {loading && <p className="mb-6 text-white/70">Loading dashboard...</p>}
 
       {/* Subtle Glow */}
       <div className="absolute w-80 h-80 bg-purple-500/10 blur-3xl rounded-full top-10 left-10"></div>

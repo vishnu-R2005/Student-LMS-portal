@@ -1,8 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-const Navbar = ({ darkMode, setDarkMode }) => {
+const Navbar = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-lg bg-black/40 border-b border-white/10 text-white transition">
@@ -16,40 +22,33 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         {/* Nav Links */}
         <nav className="flex items-center gap-5 text-sm">
           
-          <Link
-            to="/courses"
-            className="hover:text-cyan-400 transition"
-          >
-            Courses
-          </Link>
+          {user?.role!="instructor"&& (
+            <Link to="/courses" className="hover:text-cyan-400 transition">
+              Courses
+            </Link>
+          )}
 
-          {user && (
-            <Link
-              to="/dashboard"
-              className="hover:text-cyan-400 transition"
-            >
+          {user?.role === "student" && (
+            <Link to="/dashboard" className="hover:text-cyan-400 transition">
               Dashboard
             </Link>
           )}
 
-          {user?.role === "instructor" && (
-            <Link
-              to="/instructor"
-              className="hover:text-cyan-400 transition"
-            >
-              Instructor
-            </Link>
+          {(user?.role === "instructor" || user?.role === "admin") && (
+            <>
+              <Link to="/instructor/dashboard" className="hover:text-cyan-400 transition">
+                Dashboard
+              </Link>
+
+              <Link
+                to="/instructor/panel"
+                className="hover:text-cyan-400 transition"
+              >
+                Instructor
+              </Link>
+            </>
           )}
 
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="px-3 py-1 rounded-md border border-white/20 hover:bg-white/10 transition"
-          >
-            {darkMode ? "☀️" : "🌙"}
-          </button>
-
-          {/* Auth */}
           {!user ? (
             <Link
               to="/login"
@@ -59,7 +58,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             </Link>
           ) : (
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="px-4 py-1.5 rounded-md bg-rose-500 hover:bg-rose-600 transition"
             >
               Logout
