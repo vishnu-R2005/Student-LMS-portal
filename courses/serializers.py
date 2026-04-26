@@ -26,7 +26,22 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = "__all__"
+        fields = (
+            "id",
+            "title",
+            "thumbnail",
+            "image",
+            "description",
+            "category",
+            "instructor",
+            "instructor_name",
+            "price",
+            "status",
+            "created_at",
+            "updated_at",
+            "modules",
+            "enrolled_students",
+        )
         read_only_fields = ("instructor",)
 
     def get_enrolled_students(self, obj):

@@ -11,6 +11,7 @@ class Course(models.Model):
 
     title = models.CharField(max_length=255)
     thumbnail = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to="courses/", null=True, blank=True)
     description = models.TextField()
     category = models.CharField(max_length=100, default="General")
     instructor = models.ForeignKey(

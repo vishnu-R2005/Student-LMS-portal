@@ -1,5 +1,6 @@
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from accounts.permissions import IsStudent
@@ -51,6 +52,8 @@ class ProgressViewSet(viewsets.ModelViewSet):
         lesson = Lesson.objects.filter(id=lesson_id).first()
         if not enrollment or not lesson:
             return Response({"error": "Enrollment or lesson not found"}, status=404)
+        if lesson.module.course_id != enrollment.course_id:
+            raise ValidationError("Lesson does not belong to the enrolled course.")
         progress, _ = Progress.objects.get_or_create(enrollment=enrollment, lesson=lesson)
         progress.completed = True
         progress.save()

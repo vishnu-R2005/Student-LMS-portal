@@ -11,6 +11,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
+import InstructorDashboardPage from "./pages/InstructorDashboardPage";
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(true);
@@ -21,7 +22,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-white text-black dark:bg-slate-950 dark:text-white transition-colors duration-300">
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <Navbar />
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -33,7 +34,7 @@ const App = () => {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={["student"]}>
               <DashboardPage />
             </ProtectedRoute>
           }
@@ -49,13 +50,22 @@ const App = () => {
         />
 
         <Route
-          path="/instructor"
-          element={
-            <ProtectedRoute roles={["instructor", "admin"]}>
-              <InstructorPanelPage />
-            </ProtectedRoute>
-          }
-        />
+  path="/instructor/dashboard"
+  element={
+    <ProtectedRoute roles={["instructor", "admin"]}>
+      <InstructorDashboardPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/instructor/panel"
+  element={
+    <ProtectedRoute roles={["instructor", "admin"]}>
+      <InstructorPanelPage />
+    </ProtectedRoute>
+  }
+/>
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

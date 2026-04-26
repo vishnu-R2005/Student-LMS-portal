@@ -29,6 +29,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id",)
 
+    def validate_role(self, value):
+        allowed_roles = {User.Role.STUDENT, User.Role.INSTRUCTOR}
+        if value not in allowed_roles:
+            raise serializers.ValidationError("Role must be student or instructor.")
+        return value
+
     def create(self, validated_data):
         password = validated_data.pop("password")
         user = User(**validated_data)
