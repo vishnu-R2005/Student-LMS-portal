@@ -14,6 +14,13 @@ class Course(models.Model):
     image = models.ImageField(upload_to="courses/", null=True, blank=True)
     description = models.TextField()
     category = models.CharField(max_length=100, default="General")
+    category_ref = models.ForeignKey(
+        "learning.CourseCategory",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="courses",
+    )
     instructor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="instructed_courses"
     )

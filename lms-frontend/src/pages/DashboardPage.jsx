@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import ProgressBar from "../components/ProgressBar";
 import api from "../services/api";
@@ -8,14 +9,19 @@ const DashboardPage = () => {
     enrollments: [],
     recent_activity: [],
   });
+  const [workspace, setWorkspace] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/enrollments/dashboard/")
-      .then(({ data }) => setDashboard(data))
-      .catch(() => {
-        toast.error("Failed to load dashboard");
+    Promise.all([
+      api.get("/enrollments/dashboard/"),
+      api.get("/learning/workspace/student/"),
+    ])
+      .then(([d1, d2]) => {
+        setDashboard(d1.data);
+        setWorkspace(d2.data);
       })
+      .catch(() => toast.error("Failed to load dashboard"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -43,6 +49,39 @@ const DashboardPage = () => {
         <h1 className="text-3xl font-semibold mb-8 tracking-wide">
           Dashboard
         </h1>
+
+        {(workspace?.unread_notifications ?? 0) > 0 && (
+          <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm flex justify-between items-center gap-4">
+            <span>
+              You have {workspace.unread_notifications} unread inbox{" "}
+              <Link className="text-amber-200 underline font-medium" to="/dashboard/notifications">
+                notifications
+              </Link>
+            </span>
+            <Link
+              to="/dashboard/messages"
+              className="shrink-0 rounded bg-white/10 px-3 py-1.5 hover:bg-white/20"
+            >
+              Messages
+            </Link>
+          </div>
+        )}
+
+        {workspace?.announcements?.length > 0 && (
+          <div className="mb-10 rounded-xl border border-cyan-500/30 bg-white/5 p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-cyan-300 mb-3">
+              Latest announcements
+            </h2>
+            <ul className="space-y-2 text-sm text-white/70">
+              {workspace.announcements.slice(0, 5).map((a) => (
+                <li key={a.id}>
+                  <span className="text-white font-medium">{a.title}</span>
+                  <p className="text-xs text-white/50 line-clamp-2">{a.body}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid gap-6 md:grid-cols-3 mb-10">
@@ -119,6 +158,26 @@ const DashboardPage = () => {
 
           {/* Recent Activity */}
           <div className="bg-white/5 backdrop-blur-lg p-6 rounded-xl border border-white/10">
+
+            <h2 className="text-lg font-semibold mb-5 text-orange-300">
+              Upcoming work
+            </h2>
+
+            {(workspace?.upcoming_assignments || []).filter((a) => !a.submitted).length > 0 ? (
+              <ul className="space-y-2 text-sm mb-6">
+                {workspace.upcoming_assignments
+                  .filter((a) => !a.submitted)
+                  .slice(0, 5)
+                  .map((a) => (
+                    <li key={a.id}>
+                      <Link to="/dashboard/assignments" className="text-orange-100 hover:text-white">
+                        {a.title}{" "}
+                        <span className="text-white/35"> · {a.course_title}</span>
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            ) : null}
 
             <h2 className="text-lg font-semibold mb-5 text-indigo-300">
               Recent Activity

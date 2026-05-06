@@ -1,0 +1,36 @@
+# Reverse proxy combining built React SPA (dist/) and Django/Gunicorn API.
+# Paths are examples — replace server_name / SSL cert paths before production.
+
+upstream lms_api {
+    server api:8000;
+}
+
+server {
+    listen 80;
+    server_name your.domain.com;
+
+    client_max_body_size 50M;
+
+    # React build (vite dist output copied to static host path)
+    location / {
+        root /var/www/lms-frontend;
+        try_files $uri /index.html;
+    }
+
+    location /media/ {
+        alias /srv/lms/media/;
+    }
+
+    location /api/ {
+        proxy_pass http://lms_api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /admin/ {
+        proxy_pass http://lms_api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

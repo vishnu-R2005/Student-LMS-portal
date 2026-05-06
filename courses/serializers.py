@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from enrollments.models import Enrollment
+from learning.serializers import CourseCategorySerializer
 
 from .models import ContentReport, Course, Lesson, Module
 
@@ -23,6 +24,7 @@ class CourseSerializer(serializers.ModelSerializer):
     instructor_name = serializers.CharField(source="instructor.username", read_only=True)
     modules = ModuleSerializer(many=True, read_only=True)
     enrolled_students = serializers.SerializerMethodField()
+    category_ref_detail = CourseCategorySerializer(source="category_ref", read_only=True)
 
     class Meta:
         model = Course
@@ -33,6 +35,8 @@ class CourseSerializer(serializers.ModelSerializer):
             "image",
             "description",
             "category",
+            "category_ref",
+            "category_ref_detail",
             "instructor",
             "instructor_name",
             "price",
@@ -52,4 +56,4 @@ class ContentReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContentReport
         fields = "__all__"
-        read_only_fields = ("reporter", "status")
+        read_only_fields = ("reporter",)

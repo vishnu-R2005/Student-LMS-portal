@@ -17,9 +17,10 @@ const RegisterPage = () => {
   const submit = async (e) => {
     e.preventDefault();
     try {
-      await register(form);
+      const u = await register(form);
       toast.success("Account created 🎉");
-      navigate("/dashboard");
+      if (u?.role === "instructor") navigate("/instructor/dashboard");
+      else navigate("/dashboard");
     } catch {
       toast.error("Registration failed");
     }

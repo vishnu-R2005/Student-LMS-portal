@@ -1,5 +1,6 @@
 asgiref
 Django
+Pillow>=10.2.0
 django-cors-headers
 django-filter
 djangorestframework

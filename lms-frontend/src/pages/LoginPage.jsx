@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
 
@@ -19,11 +19,9 @@ const LoginPage = () => {
 
       toast.success("Welcome back!");
 
-      if (user?.role === "instructor" || user?.role === "admin") {
-        navigate("/instructor/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      if (user?.role === "admin") navigate("/admin/dashboard");
+      else if (user?.role === "instructor") navigate("/instructor/dashboard");
+      else navigate("/dashboard");
 
     } catch {
       toast.error("Invalid credentials");
@@ -61,6 +59,12 @@ const LoginPage = () => {
         <button className="w-full bg-cyan-400 py-3 rounded">
           {loading ? "Signing in..." : "Sign In"}
         </button>
+
+        <p className="text-center text-sm text-white/60">
+          <Link to="/forgot-password" className="text-cyan-300 hover:underline">
+            Forgot password?
+          </Link>
+        </p>
       </form>
     </div>
   );

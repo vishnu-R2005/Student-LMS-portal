@@ -28,7 +28,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             "instructor_dashboard",
         ]:
             return [permissions.IsAuthenticated(), IsInstructor()]
-        if self.action in ["approve"]:
+        if self.action in ["approve", "reject"]:
             return [permissions.IsAuthenticated(), IsAdmin()]
         return [permissions.AllowAny()]
 
@@ -68,6 +68,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         course.status = Course.Status.APPROVED
         course.save(update_fields=["status"])
         return Response({"message": "Course approved successfully"})
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        course = self.get_object()
+        course.status = Course.Status.REJECTED
+        course.save(update_fields=["status"])
+        return Response({"message": "Course rejected"})
 
     @action(detail=False, methods=["get"])
     def my_courses(self, request):

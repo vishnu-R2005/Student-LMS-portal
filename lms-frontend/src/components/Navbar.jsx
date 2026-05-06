@@ -1,8 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useTheme } from "../hooks/useTheme";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { darkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -20,13 +22,19 @@ const Navbar = () => {
         </Link>
 
         {/* Nav Links */}
-        <nav className="flex items-center gap-5 text-sm">
+        <nav className="flex items-center gap-4 text-sm md:gap-5">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title="Toggle theme"
+            className="rounded-full border border-white/20 px-2.5 py-1 text-xs text-white/70 hover:bg-white/10"
+          >
+            {darkMode ? "Light" : "Dark"}
+          </button>
           
-          {user?.role!="instructor"&& (
-            <Link to="/courses" className="hover:text-cyan-400 transition">
-              Courses
-            </Link>
-          )}
+          <Link to="/courses" className="hover:text-cyan-400 transition">
+            Courses
+          </Link>
 
           {user?.role === "student" && (
             <Link to="/dashboard" className="hover:text-cyan-400 transition">
@@ -37,15 +45,13 @@ const Navbar = () => {
           {(user?.role === "instructor" || user?.role === "admin") && (
             <>
               <Link to="/instructor/dashboard" className="hover:text-cyan-400 transition">
-                Dashboard
+                Instructor Hub
               </Link>
-
-              <Link
-                to="/instructor/panel"
-                className="hover:text-cyan-400 transition"
-              >
-                Instructor
-              </Link>
+              {user?.role === "admin" && (
+                <Link to="/admin/dashboard" className="hover:text-cyan-400 transition">
+                  Admin
+                </Link>
+              )}
             </>
           )}
 
