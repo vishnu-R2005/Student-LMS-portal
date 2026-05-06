@@ -9,7 +9,8 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = async () => {
     try {
-      const { data } = await api.get("/auth/profile/");
+      // FIXED: Removed incorrect /auth prefix
+      const { data } = await api.get("/profile/");
       setUser(data);
       return data;
     } catch {
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     let isMounted = true;
+
     const initializeAuth = async () => {
       try {
         if (localStorage.getItem("accessToken")) {
@@ -41,6 +43,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
+
     return () => {
       isMounted = false;
     };
@@ -48,10 +51,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     setLoading(true);
+
     try {
       const { data } = await api.post("/token/", credentials);
+
       localStorage.setItem("accessToken", data.access);
       localStorage.setItem("refreshToken", data.refresh);
+
       return await fetchProfile();
     } finally {
       setLoading(false);
@@ -59,7 +65,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (payload) => {
-    await api.post("/auth/register/", payload);
+    // FIXED: Removed incorrect /auth prefix
+    await api.post("/register/", payload);
+
     return await login({
       username: payload.username,
       password: payload.password,
